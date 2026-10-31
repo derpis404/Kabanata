@@ -1,0 +1,272 @@
+
+:root {
+    --primary: #342113;
+    --secondary: #C1A889;
+    --background: #F8E2C8;
+    --text: #342113;
+    --accent: #8B5E3C;
+}
+
+
+body{
+    background-image: url(/Frontend/assets/bg-img1.png);
+    background-size: cover;
+    font-family: "Playpen Sans", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0px;
+}
+
+/*📃HEADER AND NAVIGATION*/
+header{
+    background-color: #F8E2C8;
+    font-family: "Montserrat", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0px;
+    padding: 5px;
+    text-align: center;
+    color: var(--text);
+}
+
+header h1{
+    font-family: "SUNDAY", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 3rem;
+
+}
+
+header p{
+    font-family: "Luxurious Roman", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+}
+.navbar{
+    text-align: center;
+    background-color: #F8E2C8;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.navbar a{
+    text-decoration: none;
+    padding: 20px;
+    color: var(--text);
+    display: block;
+}
+.navbar ul{
+    list-style-type: none;
+    overflow: hidden;
+    margin: 0px;
+    padding: 0px;
+}
+.navbar li{
+    float: left;
+}
+.navbar li:hover{
+    background-color: #dbc2a4;
+    animation-name: scale;
+    animation-duration: 3s;
+}
+
+/*MAIN CONTENT*/
+
+/*📃MAIN CONTENT: DISCOVER*/
+.discover{
+    color: #FFFFFF;
+    margin-left: 40px;
+    width: 40%;
+    padding-bottom: 100px;
+
+}
+.discover h1{
+    font-family: "Arial", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 6rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    margin-bottom: 10px;
+}
+
+.discover p{
+    font-family: "Luxurious Roman","Playpen Sans", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #FFFFFF;
+}
+
+.discover button{
+    font-family: "Times New Roman","Playpen Sans", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-style: italic;
+    background-color: #C1A889;
+    color: #000000;
+    border: none;
+    padding: 15px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 19px;
+}
+
+
+/*📃MAIN CONTENT: TRENDING */
+.trending {
+    background-color: #6B2C2C;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.trending h1 {
+    font-family: "Playwrite US Trad", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--background);
+}
+
+/* THE VISIBLE CAROUSEL WINDOW */
+.carousel {
+    width: 100%;
+    overflow: hidden;
+}
+
+/* THE MOVING TRACK CONTAINS BOTH BOOK GROUPS */
+.carousel-track {
+    display: flex;
+    width: max-content;
+    animation: scroll 50s linear infinite;
+}
+
+/* EACH GROUP CONTAINS THE SAME BOOKS */
+.carousel .group {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1rem;
+
+    flex: 0 0 auto;
+    width: max-content;
+    list-style: none;
+    margin: 0;
+    padding: 0 1rem 0 0;
+}
+
+/* BOOK CARD */
+.carousel .card-item {
+    list-style-type: none;
+    flex: 0 0 280px;
+    margin: 30px;
+}
+
+/* BOOK CARD LINK */
+.carousel .card-link {
+    text-decoration: none;
+    color: var(--background);
+
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+
+    background-color: var(--primary);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* HOVER EFFECT */
+.card-item .card-link:hover {
+    background-color: var(--background);
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+
+
+/* BOOK COVER */
+.carousel .card-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    height: auto;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* BOOK TITLE */
+.carousel .book-title {
+    font-family: "Poppins", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* BOOK AUTHOR */
+.carousel .book-author {
+    font-family: "Poppins", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* SEAMLESS INFINITE SCROLL */
+@keyframes scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* PAUSE WHEN HOVERING */
+.carousel:hover .carousel-track {
+    animation-play-state: paused;
+}
+
+/* RESPECT REDUCED-MOTION PREFERENCES */
+@media (prefers-reduced-motion: reduce) {
+    .carousel-track {
+        animation: none;
+    }
+}
+
+/* SMALLER SCREENS */
+@media (max-width: 600px) {
+    .carousel .card-item {
+        flex-basis: 220px;
+    }
+
+    .carousel .card-link {
+        padding: 12px;
+    }
+}
+
+
+/*📃MAIN CONTENT: ABOUT*/
+.about{
+    background-color: var(--background);
+    margin: 40px 0px;
+    color: var(--text);
+    font-family: "Playpen Sans", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+}
+
+.about h1{
+    text-align: center;
+    font-family: "Playwrite US Trad", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.about p{
+    text-align: center;
+}
+
+
+
+/*📃FOOTER*/
+footer{
+    clear: both;
+    text-align: center;
+    background-color: var(--primary);
+    padding: 10px;
+    color: var(--background);
+    font-family: "Playpen Sans", 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
