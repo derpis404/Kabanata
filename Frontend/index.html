@@ -1,171 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Luxurious+Roman&family=Playpen+Sans:wght@100..800&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <title>Homepage</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kabanata — Read, Connect and Discover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Playwrite+US+Trad:wght@100..400&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!--HEADER AND NAVIGATION-->
-    <header>
-        <h1>Kabanata</h1>
-        <p>Connecting Filipino readers to local literature</p>
-    </header>
+  <!-- ==================== PERSISTENT HEADER ==================== -->
+  <header class="navbar">
+    <a href="#" class="logo" onclick="switchTab('home'); return false;">📖 Kabanata</a>
+    <ul class="nav-links">
+      <li><a href="#" id="nav-home" class="active" onclick="switchTab('home'); return false;">Home</a></li>
+      <li><a href="#" id="nav-explore" onclick="switchTab('explore'); return false;">Explore & Shop</a></li>
+      <li><a href="#" onclick="showToast('Events tab ready — check kabanata_events.html!'); return false;">Events</a></li>
+      <li><a href="#" onclick="showToast('My Communities coming soon!'); return false;">My Communities</a></li>
+      <li><a href="#" onclick="showToast('My Blog coming soon!'); return false;">My Blog</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="notif-btn" aria-label="Notifications" onclick="showToast('3 new community replies & TBR updates!')">
+        🔔<span class="notif-badge">3</span>
+      </button>
+      <button class="shelf-btn" onclick="openShelfDrawer()">
+        📚 Shelf & Cart (<span id="shelfCount">0</span>)
+      </button>
+      <a href="#" class="avatar" title="Romar Gallaza">RG</a>
+    </div>
+  </header>
 
-    <!--NAVBAR-->
-    <nav class="navbar">
-        <ul>
-            <li><a href="">Home</a></li>
-            <li><a href="">Trending</a></li>
-            <li><a href="">Shop</a></li>
-            <li><a href="">Events</a></li>
-            <li><a href="">My Communities</a></li>
-            <li><a href="">My Blog</a></li>
-        </ul>
-    </nav>
+  <!-- ==================== TAB 1: UNIFIED HOME PAGE ==================== -->
+  <div id="view-home">
 
-    
-    <main>
-        <section>
-        <!--MAIN CONTENT (DISCOVER)-->
-        <div class="discover">
-            <h1>DISCOVER<br>FILIPINO<br>STORIES<br></h1>
-            <p>Your gateway to the rich world of Filipino literature. Explore trending stories, shop for books, and join our vibrant community of readers and writers.</p>
-            <button class="login-button">Explore our Library</button>
+    <!-- Section 1: Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-content">
+        <h1 class="hero-title">Discover Filipino Stories</h1>
+        <p class="hero-tagline">
+          Your gateway to the rich world of Filipino literature. Explore trending stories, shop for local books, and connect with Filipino authors, publishers, and readers.
+        </p>
+        <div class="hero-cta-group">
+          <a href="#" class="hero-btn" onclick="switchTab('explore'); return false;">Explore our Library & Shop →</a>
+          <a href="#currently-trending" class="hero-btn-secondary">Browse Trending ↓</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Currently Trending Infinite Marquee (With Original Assets + Glide Popover) -->
+    <section class="trending-band" id="currently-trending">
+      <div class="band-header">
+        <div>
+          <h2 class="band-title">currently trending</h2>
+          <p class="band-subtitle">Glide your cursor over any book cover for synopsis, community reviews & quick TBR</p>
+        </div>
+        <span class="band-pill">🔥 Top Talked-About Books This Week</span>
+      </div>
+
+      <div class="carousel">
+        <div class="carousel-track" id="trendingTrack">
+          <!-- Populated dynamically with primary group + aria-hidden duplicate group for seamless loop -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: 3-Column Author Spotlight / Reading Community / Upcoming Releases -->
+    <section class="tri-column-section">
+      <!-- Left: Author of the Day -->
+      <div class="author-col">
+        <div class="author-label">all about</div>
+        <div class="author-name">Lualhati Bautista</div>
+        <div class="author-bio-top">
+          <div class="author-photo">LB</div>
+          <div>
+            <p><strong>Born:</strong> Dec 2, 1945</p>
+            <p><strong>Based in:</strong> Tondo, Manila</p>
+            <p><strong>Genres:</strong> Social Realism, Historical Fiction</p>
+          </div>
+        </div>
+        <p class="author-desc">
+          One of the foremost Filipino female novelists in the history of contemporary Philippine literature, celebrated for her honest realism and courageous exploration of women's issues during the Martial Law era.
+        </p>
+        <h4 class="sub-heading">featured works</h4>
+        <div class="mini-works-grid">
+          <div class="mini-work" onmouseenter="showPopover(event, 'dekada')" onmouseleave="scheduleHidePopover()">Dekada '70</div>
+          <div class="mini-work" onmouseenter="showPopover(event, 'bata')" onmouseleave="scheduleHidePopover()">Bata, Bata...</div>
+          <div class="mini-work" onmouseenter="showPopover(event, 'gapo')" onmouseleave="scheduleHidePopover()">GAPÔ</div>
+          <div class="mini-work" onmouseenter="showPopover(event, 'desaparesidos')" onmouseleave="scheduleHidePopover()">Desaparesidos</div>
+        </div>
+      </div>
+
+      <!-- Center: Create or Discover Reading Community -->
+      <div class="community-col">
+        <h2>create or discover your own reading community</h2>
+        <p class="community-sub">Delve into nested discussion forums and spoiler-tagged threads right here in Kabanata.</p>
+
+        <div class="thread-card">
+          <div class="thread-meta">r/PinoyMythology • Posted by @juan_reads • 2h ago</div>
+          <div class="thread-title">[SPOILER] Ella Arcangel & Janus Sílang Lore Connections</div>
+          <p class="thread-preview">Anyone else notice how modern Pinoy urban fantasy blends Visayan and Tagalog folklore creatures in Metro Manila settings?</p>
         </div>
 
-        
-        <!-- MAIN CONTENT: TRENDING -->
-        <div class="trending">
-            <h1>Currently Trending</h1>
-            <div class="carousel">
-                <div class="carousel-track">
-                <ul class="group">
+        <div class="thread-card">
+          <div class="thread-meta">r/MIBFBookClub • Posted by @sinta_bookworm • 5h ago</div>
+          <div class="thread-title">September Reading Wrap-Up: Top Indie Komiks & Non-Fiction Hauls!</div>
+          <p class="thread-preview">Just finished Atom Araullo's A View from the Ground and Bob Ong's Mama Susan. Drop your TBR lists below!</p>
+        </div>
+      </div>
 
-                    <li class="card-item">
-                        <a href="#" class="card-link">
-                            <img
-                                src="assets/book1.jpg"
-                                alt="The End Comes Without a Gasp book cover"
-                                class="card-image"
-                            >
-                            <p class="book-title">"the end comes without a gasp"</p>
-                            <p class="book-author">Trish Shishikura</p>
-                        </a>
-                    </li>
+      <!-- Right: Upcoming Releases -->
+      <div class="upcoming-col">
+        <div class="upcoming-header">
+          <h3>upcoming<br>releases</h3>
+          <div class="date-circle">
+            <span>OCT</span>12
+          </div>
+        </div>
+        <p class="release-label">▷ releasing soon</p>
+        <div class="featured-upcoming" onmouseenter="showPopover(event, 'trese')" onmouseleave="scheduleHidePopover()">
+          <span class="countdown-pill">⏳ 5 Days Left</span>
+          <div>
+            <h4 class="upcoming-book-title">Trese Vol. 8: Shadow Witness</h4>
+            <p class="upcoming-book-quote">"Most anticipated komik continuation of the year!" — Early ARC Review</p>
+          </div>
+        </div>
+        <p class="release-label">▷ later this month</p>
+        <div class="mini-works-grid">
+          <div class="mini-work" style="background-color: var(--toasted-caramel);" onmouseenter="showPopover(event, 'ella')" onmouseleave="scheduleHidePopover()">Ella Arcangel Vol. 2</div>
+          <div class="mini-work" style="background-color: var(--dark-chocolate);" onmouseenter="showPopover(event, 'mamasusan')" onmouseleave="scheduleHidePopover()">Mama Susan Special Ed.</div>
+        </div>
+      </div>
+    </section>
 
-                    <li class="card-item">
-                        <a href="#" class="card-link">
-                            <img
-                                src="assets/book2.png"
-                                alt="Ella Arangel: Lupa at Dugo book cover"
-                                class="card-image"
-                            >
-                            <p class="book-title">"Ella Arcangel: Lupa at Dugo"</p>
-                            <p class="book-author">Julius Villanueva</p>
-                        </a>
-                    </li>
+    <!-- Section 4: Merged Pinoy Lit Showcase & Did You Know Flashcard -->
+    <section class="merged-showcase-section">
+      <div>
+        <div class="showcase-header">
+          <h2>pinoy lit showcase</h2>
+          <div class="pub-pills">
+            <button class="pub-pill active" onclick="filterShowcase('All', this)">All</button>
+            <button class="pub-pill" onclick="filterShowcase('Anvil', this)">Anvil</button>
+            <button class="pub-pill" onclick="filterShowcase('Visprint', this)">Visprint</button>
+            <button class="pub-pill" onclick="filterShowcase('Komiket', this)">Komiket / Indie</button>
+          </div>
+        </div>
+        <div class="showcase-row" id="showcaseRow"></div>
+      </div>
 
+      <div class="trivia-box-large">
+        <h3>💡 did you know?</h3>
+        <p id="homeTriviaText">
+          Jose Rizal's original manuscript of <em>Noli Me Tangere</em> was bound with the help of Maximo Viola in Berlin in 1887 after Rizal nearly threw it into the fireplace due to lack of printing funds.
+        </p>
+        <button class="trivia-btn" onclick="nextHomeTrivia()">Next Trivia Fact →</button>
+      </div>
+    </section>
 
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img
-                                src="assets/book3.jpg"
-                                alt=""
-                                class="card-image"
-                            >
-                            <p class="book-title">"Ang mga Kaibigan ni Mama Susan"</p>
-                            <p class="book-author">Bob Ong</p>
-                        </a>
-                    </li>
+    <!-- Section 5: About Us -->
+    <section class="about-banner">
+      <h2>About Kabanata</h2>
+      <p>
+        Kabanata is a platform dedicated to connecting Filipino readers with local literature. Our mission is to promote and celebrate the rich literary heritage of the Philippines, providing a space for readers and writers to discover, share, and engage with stories that reflect our culture and identity.
+      </p>
+      <p>
+        We're a platform that gives readers an opportunity to make friends, join book clubs, and engage in hobbies without compromising their academic or personal responsibilities.
+      </p>
+    </section>
 
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img
-                                src="assets/book4.jpg"
-                                alt=""
-                                class="card-image"
-                            >
-                            <p class="book-title">"A View from the Ground"</p>
-                            <p class="book-author">Atom Araullo</p>
-                        </a>
-                    </li>
+  </div>
 
-                </ul>
+  <!-- ==================== TAB 2: EXPLORE & SHOP CATALOG ==================== -->
+  <div id="view-explore" class="hidden">
 
-                
-                <!-- SECOND GROUP: DUPLICATE BOOKS FOR INFINITE LOOP -->
-                <ul class="group" aria-hidden="true">
-
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img src="assets/book1.jpg" alt="" class="card-image">
-                            <p class="book-title">"the end comes without a gasp"</p>
-                            <p class="book-author">Trish Shishikura</p>
-                        </a>
-                    </li>
-
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img src="assets/book2.png" alt="" class="card-image">
-                            <p class="book-title">"Ella Arcangel: Lupa at Dugo"</p>
-                            <p class="book-author">Julius Villanueva</p>
-                        </a>
-                    </li>
-
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img src="assets/book3.jpg" alt="" class="card-image">
-                            <p class="book-title">"Ang mga Kaibigan ni Mama Susan"</p>
-                            <p class="book-author">Bob Ong</p>
-                        </a>
-                    </li>
-
-                    <li class="card-item">
-                        <a href="#" class="card-link" tabindex="-1">
-                            <img src="assets/book4.jpg" alt="" class="card-image">
-                            <p class="book-title">"A View from the Ground"</p>
-                            <p class="book-author">Atom Araullo</p>
-                        </a>
-                    </li>
-
-                </ul>
-
-                </div>
-            </div>
+  <!-- Top Discovery Bar -->
+    <section class="discovery-hero">
+      <div class="search-container">
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by book title, Filipino author, publisher, or trope..."
+            oninput="filterBooks()"
+            onkeydown="if (event.key === 'Enter') fetchBooksFromAPI(this.value || 'Philippine literature')"
+          />
+          <button type="button" onclick="fetchBooksFromAPI(document.getElementById('searchInput').value || 'Philippine literature')">
+            Search
+          </button>
         </div>
 
+        <div class="quick-pills">
+          <span>Popular Tags:</span>
+          <button class="pill active" onclick="setQuickTag('All', this)">All Books</button>
+          <button class="pill" onclick="setQuickTag('Mythology', this)">Philippine Mythology</button>
+          <button class="pill" onclick="setQuickTag('Horror', this)">Pinoy Horror / Suspense</button>
+          <button class="pill" onclick="setQuickTag('Komiks', this)">Pinoy Komiks</button>
+          <button class="pill" onclick="setQuickTag('Non-Fiction', this)">Journalism & Essays</button>
+          <button class="pill" onclick="setQuickTag('Historical', this)">Historical Fiction</button>
+          <button class="pill" onclick="setQuickTag('Romance', this)">Pinoy Romance</button>
+          <button class="pill" onclick="setQuickTag('Poetry', this)">Filipino Poetry</button>
+        </div>
+      </div>
+    </section>
 
-        <!--MAIN CONTENT (COMMUNITY)-->
-        <div class="community">
-            <!--code here-->
+    <!-- Main Sidebar + Catalog Grid -->
+    <main class="explore-wrapper">
+      <!-- Left Sidebar Filters -->
+      <aside class="filter-sidebar">
+        <div class="filter-group">
+          <div class="filter-title">Marketplace Listing</div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="market-filter" value="sale" onchange="filterBooks()"> Available for Sale</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="market-filter" value="swap" onchange="filterBooks()"> Open for Swap / Trade</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="market-filter" value="library" onchange="filterBooks()"> Digital TBR / Library Only</label>
+          </div>
         </div>
 
-        <!--MAIN CONTENT (LOG IN)-->
-        <div class="login">
-            <!--code here-->
+        <div class="filter-group">
+          <div class="filter-title">Pinoy Lit Publishers</div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="pub-filter" value="Anvil" onchange="filterBooks()"> Anvil Publishing</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="pub-filter" value="Visprint" onchange="filterBooks()"> Visprint / Avenida</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="pub-filter" value="Komiket" onchange="filterBooks()"> Komiket / Indie</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="pub-filter" value="Adarna" onchange="filterBooks()"> Adarna / Anino</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="pub-filter" value="Penguin SEA" onchange="filterBooks()"> Penguin SEA</label>
+          </div>
         </div>
 
-        <!--MAIN CONTENT (ABOUT)-->
-        <div class="about">
-            <!--code here-->
-            <h1>About Kabanata</h1>
-            <p>Kabanata is a platform dedicated to connecting Filipino readers with local literature.<br>Our mission is to promote and celebrate the rich literary heritage of the Philippines,providing a space for<br>readers and writers to discover, share, and engage with stories that reflect our culture and identity.</p>
+        <div class="filter-group">
+          <div class="filter-title">Language</div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="lang-filter" value="Tagalog" onchange="filterBooks()"> Tagalog</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="lang-filter" value="Taglish" onchange="filterBooks()"> Taglish</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="lang-filter" value="English" onchange="filterBooks()"> English</label>
+          </div>
         </div>
 
-        </section>
+        <div class="filter-group">
+          <div class="filter-title">Format</div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="fmt-filter" value="Novel" onchange="filterBooks()"> Novel</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="fmt-filter" value="Komiks" onchange="filterBooks()"> Komiks / Graphic Novel</label>
+          </div>
+          <div class="filter-option">
+            <label><input type="checkbox" class="fmt-filter" value="Non-Fiction" onchange="filterBooks()"> Non-Fiction / Essays</label>
+          </div>
+        </div>
 
-        
+        <button class="reset-btn" onclick="resetFilters()">Reset All Filters</button>
+      </aside>
+
+      <!-- Right Book Catalog & Shop -->
+      <section>
+        <div class="catalog-header">
+          <div>
+            <h1 class="serif-heading">Explore Library & Marketplace</h1>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Glide over any cover for synopsis & reviews, or shop/swap directly with local readers & publishers.</p>
+          </div>
+          <div class="catalog-controls">
+            <span id="bookCount">Showing 9 books</span>
+            <select class="sort-select" id="sortSelect" onchange="filterBooks()">
+              <option value="trending">Sort by: Trending Now</option>
+              <option value="rating">Sort by: Highest Rated</option>
+              <option value="price-low">Sort by: Price (Low to High)</option>
+              <option value="title">Sort by: Title (A–Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="book-grid" id="bookGrid"></div>
+      </section>
     </main>
+  </div>
 
-    <footer>
-        <p>&copy; 2026 Kabanata. All rights reserved.</p>
-    </footer>
+  <!-- ==================== GLIDE-IN FLOATING BOOK POPOVER ==================== -->
+  <div id="book-hover-popover" class="book-popover" onmouseenter="cancelHidePopover()" onmouseleave="scheduleHidePopover()">
+    <div class="pop-header">
+      <div class="pop-tags" id="popTags"></div>
+      <span class="pop-lang" id="popLang">Tagalog</span>
+    </div>
+    <h3 class="pop-title" id="popTitle">Book Title</h3>
+    <div class="pop-author" id="popAuthor">by Author Name</div>
+    <div class="pop-rating" id="popRating">★★★★★ (4.9)</div>
+    <p class="pop-synopsis" id="popSynopsis">Book synopsis goes here...</p>
+    <div class="pop-reviews" id="popReviews"></div>
+    <div class="pop-actions">
+      <button class="pop-tbr-btn" id="popTbrBtn" onclick="toggleCurrentPopoverTBR()">+ Add to TBR Shelf</button>
+      <button class="pop-shop-btn" id="popShopBtn" onclick="handlePopoverShopAction()">Buy / View</button>
+    </div>
+  </div>
 
+  <!-- ==================== SHELF & CART DRAWER ==================== -->
+  <div class="drawer-overlay" id="shelfOverlay" onclick="closeShelfDrawer(event)">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <h2 class="serif-heading">📚 My TBR Shelf & Cart</h2>
+        <button class="drawer-close" onclick="forceCloseShelfDrawer()">×</button>
+      </div>
+      <div class="drawer-body" id="shelfDrawerBody">
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Your TBR shelf and shopping cart are currently empty. Glide over any book or click "+ Add to TBR" / "Add to Cart" to save items!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <ul class="footer-links">
+      <li><a href="#">Help & Support</a></li>
+      <li><a href="#">FAQ ("How to Use Kabanata")</a></li>
+      <li><a href="#">About Us</a></li>
+      <li><a href="#">Contact Us</a></li>
+      <li><a href="#">Privacy & Data Privacy Act</a></li>
+    </ul>
+    <p class="copyright">© 2026 Kabanata: Read, Connect and Discover. All Rights Reserved.</p>
+  </footer>
+
+  <!-- ==================== BOOK DETAIL MODAL (WITH CAROUSEL & REVIEWS) ==================== -->
+  <div class="modal-overlay" id="bookModalOverlay" onclick="closeBookModal(event)">
+    <div class="book-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalBookTitle">
+      <button class="modal-close-btn" onclick="forceCloseBookModal()" aria-label="Close modal">×</button>
+
+      <div class="modal-body-grid">
+        <!-- Left: Interactive Book Image Carousel -->
+        <div class="modal-media-col">
+          <div class="modal-carousel-stage" id="modalCarouselStage">
+            <button class="carousel-nav-btn prev" id="modalPrevBtn" onclick="stepModalCarousel(-1)" aria-label="Previous image">‹</button>
+            <div class="modal-slide-viewport" id="modalSlideViewport"></div>
+            <button class="carousel-nav-btn next" id="modalNextBtn" onclick="stepModalCarousel(1)" aria-label="Next image">›</button>
+          </div>
+          <div class="modal-carousel-dots" id="modalCarouselDots"></div>
+          <div class="modal-carousel-caption" id="modalCarouselCaption">Cover Preview</div>
+        </div>
+
+        <!-- Right: Full Metadata, Synopsis, Reviews & Review Form -->
+        <div class="modal-info-col">
+          <div class="modal-badges" id="modalBadges"></div>
+          <h2 class="modal-title" id="modalBookTitle">Book Title</h2>
+          <p class="modal-author" id="modalBookAuthor">by Author Name</p>
+          <div class="modal-rating-row" id="modalRatingRow">★★★★★ (4.8)</div>
+
+          <div class="modal-action-bar">
+            <button class="pop-tbr-btn" id="modalTbrBtn" onclick="toggleCurrentModalTBR()">+ Add to TBR Shelf</button>
+            <button class="pop-shop-btn" id="modalShopBtn" onclick="handleModalShopAction()">Add to Cart</button>
+          </div>
+
+          <h4 class="modal-section-label">Synopsis</h4>
+          <p class="modal-synopsis" id="modalBookSynopsis"></p>
+
+          <h4 class="modal-section-label">Reader Reviews (<span id="modalReviewCount">0</span>)</h4>
+          <div class="modal-reviews-list" id="modalReviewsList"></div>
+
+          <form class="modal-review-form" onsubmit="submitBookReview(event)">
+            <div class="review-form-row">
+              <input type="text" id="reviewHandleInput" placeholder="@your_handle (default: @romar_reads)" maxlength="28" />
+              <select id="reviewRatingSelect" aria-label="Star rating">
+                <option value="5">★★★★★ (5.0)</option>
+                <option value="4">★★★★☆ (4.0)</option>
+                <option value="3">★★★☆☆ (3.0)</option>
+              </select>
+            </div>
+            <textarea id="reviewTextInput" rows="2" placeholder="Share your thoughts or favorite quote from this book..." required></textarea>
+            <button type="submit" class="submit-review-btn">Post Review</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
 </body>
 </html>
