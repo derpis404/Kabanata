@@ -301,7 +301,9 @@ function renderTrendingMarquee() {
 
 /* ==================== GLIDE-IN BOOK POPOVER LOGIC ==================== */
 function getBookById(id) {
-  return booksData.find(b => b.id === id) || extraSpotlightBooks[id];
+  return booksData.find(b => b.id === id) ||
+         searchedBooks.find(b => b.id === id) ||
+         extraSpotlightBooks[id];
 }
 
 function formatBookSynopsisHTML(rawText) {
@@ -546,6 +548,9 @@ function forceCloseShelfDrawer() {
 /* ==================== EXPLORE & SHOP FILTERING ==================== */
 let activeQuickTag = "All";
 
+/*🔴CHANGE MADE🔴*/
+let searchedBooks = [];
+
 /* ==================== POPULAR TAGS + LIVE API FETCH ==================== */
 const tagSearchQueries = {
   "Mythology": "Philippine mythology folklore",
@@ -585,7 +590,8 @@ function filterBooks() {
   const fmts = getCheckedValues(".fmt-filter");
   const sort = document.getElementById("sortSelect").value;
 
-  let filtered = booksData.filter(b => {
+  /*🔴CHANGE MADE🔴*/
+  let filtered = [...booksData, ...searchedBooks].filter(b => {
     const matchesQuery = b.title.toLowerCase().includes(query) || b.author.toLowerCase().includes(query) || b.publisher.toLowerCase().includes(query);
     const matchesMarket = markets.length === 0 || markets.includes(b.marketType);
     const matchesPub = pubs.length === 0 || pubs.includes(b.publisher);
@@ -728,9 +734,10 @@ async function fetchBooksFromAPI(searchTerm = "Philippine literature") {
 
     const data = await response.json();
     if (!data.items || data.items.length === 0) {
-      renderExploreGrid([]);
-      return;
-    }
+        searchedBooks = [];
+        filterBooks();
+        return;
+}
 
     const apiBooks = data.items.map((item, index) => {
       const info = item.volumeInfo || {};
@@ -785,15 +792,12 @@ async function fetchBooksFromAPI(searchTerm = "Philippine literature") {
       };
     });
 
-    apiBooks.forEach(newBook => {
-      if (!booksData.some(existing => existing.id === newBook.id)) {
-        booksData.push(newBook);
-      }
-    });
+    searchedBooks = apiBooks;
 
     appendDynamicTags(data.items);
-    renderExploreGrid(apiBooks);
-  } catch (err) {
+    filterBooks();
+
+    } catch (err) {
     console.warn("Google Books unavailable, falling back to Open Library:", err.message);
     await fetchFromOpenLibraryFallback(searchTerm);
   }
@@ -864,18 +868,16 @@ async function fetchFromOpenLibraryFallback(searchTerm) {
       };
     });
 
-    apiBooks.forEach(newBook => {
-      if (!booksData.some(existing => existing.id === newBook.id)) {
-        booksData.push(newBook);
-      }
-    });
+    /*🔴CHANGE MADE🔴*/
+        searchedBooks = apiBooks;
+        filterBooks();
 
-    renderExploreGrid(apiBooks);
-  } catch (fallbackErr) {
-    console.error("Both APIs failed:", fallbackErr);
-    filterBooks();
+    } catch (fallbackErr) {
+      console.error("Both APIs failed:", fallbackErr);
+      filterBooks();
+    }
   }
-}
+
 
 /* ==================== BOOK DETAIL MODAL & INTERACTIVE CAROUSEL ==================== */
 let currentModalBookId = null;
