@@ -230,12 +230,44 @@ const extraSpotlightBooks = {
   }
 };
 
+/*🔴CHANGE MADE*/
 /* ==================== STATE (TBR & CART) ==================== */
-let tbrSet = new Set(["ella", "mamasusan"]);
-let cartList = [
+
+// Load saved data safely from localStorage
+function loadFromStorage(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved !== null ? JSON.parse(saved) : fallback;
+  } catch (error) {
+    console.warn(`Could not load ${key} from localStorage:`, error);
+    return fallback;
+  }
+}
+
+// Save data safely to localStorage
+function saveToStorage(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.warn(`Could not save ${key} to localStorage:`, error);
+  }
+}
+
+// Restore TBR Shelf
+let tbrSet = new Set(
+  loadFromStorage("kabanata_tbrSet", ["ella", "mamasusan"])
+);
+
+// Restore Shopping Cart
+let cartList = loadFromStorage("kabanata_cartList", [
   { id: "gasp", title: "The End Comes Without a Gasp", price: 495 }
-];
+]);
+
+// Restore newly posted reviews, organized by book ID
+let bookReviews = loadFromStorage("kabanata_bookReviews", {});
+
 let currentPopoverBookId = null;
+
 let hidePopoverTimer = null;
 
 function updateShelfCounter() {
@@ -278,7 +310,7 @@ function renderTrendingMarquee() {
       trendingBooks.map(b => `
         <li class="card-item">
           <a href="#" class="card-link" ${isDuplicate ? 'tabindex="-1"' : ''}
-             onmouseenter="showPopover(event, '${b.id}')"
+             onmouseenter="showBookPopover(event, '${b.id}')"
              onmouseleave="scheduleHidePopover()"
              onclick="openBookModal('${b.id}'); return false;">
             <div class="cover-frame" style="background: ${b.fallbackBg};">
@@ -356,7 +388,7 @@ function renderSynopsisText(element, text) {
   }
 }
 
-function showPopover(event, bookId) {
+function showBookPopover(event, bookId) {
   cancelHidePopover();
   const book = getBookById(bookId);
   if (!book) return;
@@ -463,30 +495,52 @@ function handlePopoverShopAction() {
   }
 }
 
+/*🔴CHANGE MADE🔴*/
 /* ==================== TBR & CART ACTIONS ==================== */
 function toggleTBR(bookId) {
   const book = getBookById(bookId);
+
   if (!book) return;
+
   if (tbrSet.has(bookId)) {
     tbrSet.delete(bookId);
+
     showToast(`Removed "${book.title}" from TBR Shelf`);
   } else {
     tbrSet.add(bookId);
+
     showToast(`Added "${book.title}" to your TBR Shelf!`);
   }
+
+  // Save TBR Shelf to localStorage
+  saveToStorage("kabanata_tbrSet", [...tbrSet]);
+
   updateShelfCounter();
+
   filterBooks();
 }
 
+/*🔴CHANGE MADE🔴*/
 function addToCart(bookId) {
   const book = getBookById(bookId);
+
   if (!book) return;
+
   if (!cartList.some(item => item.id === bookId)) {
-    cartList.push({ id: book.id, title: book.title, price: book.price });
+    cartList.push({
+      id: book.id,
+      title: book.title,
+      price: book.price
+    });
+
+    // Save Cart to localStorage
+    saveToStorage("kabanata_cartList", cartList);
+
     showToast(`Added "${book.title}" (₱${book.price}) to Cart!`);
   } else {
     showToast(`"${book.title}" is already in your Cart.`);
   }
+
   updateShelfCounter();
 }
 
@@ -531,12 +585,17 @@ function openShelfDrawer() {
   document.getElementById("shelfOverlay").classList.add("active");
 }
 
+/*🔴CHANGE MADE🔴*/
 function removeFromCart(id) {
   cartList = cartList.filter(i => i.id !== id);
+
+  // Save updated Cart after removal
+  saveToStorage("kabanata_cartList", cartList);
+
   updateShelfCounter();
+
   openShelfDrawer();
 }
-
 function closeShelfDrawer(e) {
   if (e.target.id === "shelfOverlay") forceCloseShelfDrawer();
 }
@@ -633,7 +692,7 @@ function renderExploreGrid(list) {
     }
 
     return `
-      <article class="book-card" onclick="openBookModal('${b.id}')" onmouseenter="showPopover(event, '${b.id}')" onmouseleave="scheduleHidePopover()">
+      <article class="book-card" onclick="openBookModal('${b.id}')" onmouseenter="showBookPopover(event, '${b.id}')" onmouseleave="scheduleHidePopover()">
         <div class="book-cover" style="background: ${b.fallbackBg}">
           <div class="cover-top-row">
             <span class="cover-tag">${b.publisher}</span>
@@ -677,7 +736,7 @@ function filterShowcase(pub, btn) {
   const showcasePool = booksData.slice(0, 4);
   const list = pub === "All" ? showcasePool : showcasePool.filter(i => i.publisher === pub);
   document.getElementById("showcaseRow").innerHTML = list.map(i => `
-    <div class="showcase-card" onmouseenter="showPopover(event, '${i.id}')" onmouseleave="scheduleHidePopover()">
+    <div class="showcase-card" onmouseenter="showBookPopover(event, '${i.id}')" onmouseleave="scheduleHidePopover()">
       <div class="showcase-cover" style="background: ${i.fallbackBg}">
         ${i.image ? `<img src="${i.image}" alt="${i.title}" class="showcase-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">` : ''}
         <span style="position:relative; z-index:2; display:${i.image ? 'none' : 'inline'};">${i.title}</span>
@@ -1046,34 +1105,70 @@ function handleModalShopAction() {
   }
 }
 
+/*🔴CHANGE MADE🔴*/
 function renderModalReviews(book) {
   const listEl = document.getElementById("modalReviewsList");
   const countEl = document.getElementById("modalReviewCount");
-  const reviews = book.reviews || [];
+
+  // Get newly posted reviews for this specific book
+  const savedReviews = bookReviews[book.id] || [];
+
+  // Combine user reviews with the book's original reviews
+  const reviews = [...savedReviews, ...(book.reviews || [])];
+
   countEl.textContent = reviews.length;
 
   listEl.innerHTML = reviews.length === 0
     ? `<p style="font-size:0.82rem; color:var(--text-muted);">No community reviews yet—be the first to share your thoughts!</p>`
-    : reviews.map(r => `<div class="modal-review-item">${r}</div>`).join("");
+    : reviews.map(r => `
+        <div class="modal-review-item">${r}</div>
+      `).join("");
 }
 
+
+/*🔴CHANGE MADE🔴*/
 function submitBookReview(event) {
   event.preventDefault();
+
   if (!currentModalBookId) return;
+
   const book = getBookById(currentModalBookId);
+
   if (!book) return;
 
   const rawHandle = document.getElementById("reviewHandleInput").value.trim();
-  const handle = rawHandle ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`) : "@romar_reads";
+
+  const handle = rawHandle
+    ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`)
+    : "@romar_reads";
+
   const starsCount = Number(document.getElementById("reviewRatingSelect").value);
+
   const comment = document.getElementById("reviewTextInput").value.trim();
+
   if (!comment) return;
 
   const starsStr = "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
-  book.reviews.unshift(`"${comment}" — ${handle} (${starsStr})`);
 
+  const newReview = `"${comment}" — ${handle} (${starsStr})`;
+
+  // Create a review array for this book if one does not exist yet
+  if (!bookReviews[book.id]) {
+    bookReviews[book.id] = [];
+  }
+
+  // Add the new review to this book's saved reviews
+  bookReviews[book.id].unshift(newReview);
+
+  // Save all newly posted reviews to localStorage
+  saveToStorage("kabanata_bookReviews", bookReviews);
+
+  // Clear the review input
   document.getElementById("reviewTextInput").value = "";
+
+  // Refresh the reviews displayed in the modal
   renderModalReviews(book);
+
   showToast(`Review posted for "${book.title}"!`);
 }
 
