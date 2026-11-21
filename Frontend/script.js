@@ -97,7 +97,7 @@ const booksData = [
     marketType: "sale",
     price: 350,
     seller: "Avenida Books Official",
-    image: "assests/book5.jpg",
+    image: "assets/book5.jpg",
     fallbackBg: "linear-gradient(145deg, #23120B, #5E2724)",
     synopsis: "When the police are baffled by supernatural crimes in Manila, they call Alexandra Trese—a detective navigating deals with tikbalang, aswang, and elemental clans.",
     reviews: [
@@ -118,7 +118,7 @@ const booksData = [
     marketType: "swap",
     condition: "Pre-Loved",
     seller: "@sitio_badua",
-    image: "assests/book6.jpg",
+    image: "assets/book6.jpg",
     fallbackBg: "linear-gradient(145deg, #8C583A, #23120B)",
     synopsis: "After every other player in an online RPG tournament dies mysteriously, teenager Janus discovers that ancient Philippine mythological beings are hunting him in the real world.",
     reviews: [
@@ -138,7 +138,7 @@ const booksData = [
     trending: 7,
     marketType: "library",
     seller: "Community Archive",
-    image: "assests/book7.jpg",
+    image: "assets/book7.jpg",
     fallbackBg: "linear-gradient(145deg, #76332F, #23120B)",
     synopsis: "Amanda Bartolome navigates motherhood, marriage, and political awakening as her five sons come of age during the turbulent Martial Law years in the Philippines.",
     reviews: [
@@ -159,7 +159,7 @@ const booksData = [
     marketType: "sale",
     price: 295,
     seller: "Visprint Archive Partner",
-    image: "assests/book8.jpg",
+    image: "assets/book8.jpg",
     fallbackBg: "linear-gradient(145deg, #8C583A, #5E2724)",
     synopsis: "A hilarious and nostalgic look back at Filipino public school life—from terror teachers and cafeteria chaos to college survival.",
     reviews: [
@@ -180,7 +180,7 @@ const booksData = [
     marketType: "swap",
     condition: "Collector's Paperback",
     seller: "@upd_komiks",
-    image: "assests/book9.jpg",
+    image: "assets/book9.jpg",
     fallbackBg: "linear-gradient(145deg, #4E5438, #342113)",
     synopsis: "UP Diliman student Nicole Lacson answers a mysterious summons and teams up with fellow students to capture escaped engkantos roaming Metro Manila.",
     reviews: [
@@ -695,7 +695,6 @@ function nextHomeTrivia() {
   document.getElementById("homeTriviaText").textContent = triviaFacts[triviaIdx];
 }
 
-
 function showToast(msg) {
   const toast = document.getElementById("toast");
   toast.textContent = msg;
@@ -703,7 +702,7 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
-/* ==================== LIVE BOOK API FETCHER (OPEN LIBRARY) ==================== */
+/* ==================== LIVE BOOK API FETCHER (ASP.NET CORE PROXY -> OPEN LIBRARY) ==================== */
 const fallbackGradients = [
   "linear-gradient(145deg, #2C3E50, #5E2724)",
   "linear-gradient(145deg, #5E2724, #23120B)",
@@ -711,79 +710,74 @@ const fallbackGradients = [
   "linear-gradient(145deg, #8C583A, #23120B)"
 ];
 
-const GOOGLE_BOOKS_API_KEY = "AIzaSyDp7eVqhBXK_S2Zl8tWa3o_ph1O-ApHsPs"; //  Google Books API key here
+const BACKEND_URL = "https://localhost:5109"; // Replace with your deployed ASP.NET Core URL when hosted
+
+function mapOpenLibraryDocs(docs) {
+  return (docs || []).map((doc, index) => {
+    const cleanId = (doc.key || `book_${index}`).replace("/works/", "ol_");
+    const mappedLang = doc.language?.[0] === "tgl" ? "Tagalog" : "English";
+    const marketModes = ["sale", "swap", "library"];
+    const marketType = marketModes[index % 3];
+
+    const coverUrl = doc.cover_i
+      ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
+      : "";
+
+    const parsedRating = doc.ratings_average
+      ? Number(doc.ratings_average).toFixed(1)
+      : 4.7;
+
+    return {
+      id: cleanId,
+      workKey: doc.key,
+      title: doc.title || "Untitled Work",
+      author: Array.isArray(doc.author_name) && doc.author_name.length > 0
+        ? doc.author_name.slice(0, 2).join(", ")
+        : "Unknown Author",
+      publisher: Array.isArray(doc.publisher) && doc.publisher.length > 0
+        ? doc.publisher[0]
+        : "Indie Press",
+      language: mappedLang,
+      format: "Novel",
+      trope: "All",
+      rating: parsedRating,
+      trending: booksData.length + index + 1,
+      marketType: marketType,
+      price: marketType === "sale" ? 350 + (index * 35) : undefined,
+      condition: marketType === "swap" ? "Pre-Loved (Good)" : undefined,
+      seller: marketType === "sale" ? "Partner Bookstore" : "@kabanata_reader",
+      gallery: coverUrl ? [coverUrl] : [],
+      image: coverUrl,
+      fallbackBg: fallbackGradients[index % fallbackGradients.length],
+      synopsis: "No available synopsis.",
+      reviews: [
+        doc.ratings_average
+          ? `"Rated ${parsedRating}/5 by readers on Open Library."`
+          : '"Verified edition via Kabanata Global Catalog." — @kabanata_reads'
+      ]
+    };
+  });
+}
 
 async function fetchBooksFromAPI(searchTerm = "Philippine literature") {
   const countLabel = document.getElementById("bookCount");
   countLabel.textContent = "Searching catalog...";
 
   try {
-    const keyParam = GOOGLE_BOOKS_API_KEY ? `&key=${GOOGLE_BOOKS_API_KEY}` : "";
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchTerm)}&maxResults=12&printType=books${keyParam}`;
+    const url = `${BACKEND_URL}/api/books/search?q=${encodeURIComponent(searchTerm)}`;
     const response = await fetch(url);
 
     if (!response.ok) {
-      throw new Error(`Google Books HTTP ${response.status}`);
+      throw new Error(`Backend HTTP ${response.status}`);
     }
 
     const data = await response.json();
-    if (!data.items || data.items.length === 0) {
+    const apiBooks = mapOpenLibraryDocs(data.docs);
+
+    if (apiBooks.length === 0) {
       renderExploreGrid([]);
       return;
     }
-
-    const apiBooks = data.items.map((item, index) => {
-      const info = item.volumeInfo || {};
-      const cleanId = `gb_${item.id}`;
-      const mappedLang = info.language === "tl" ? "Tagalog" : "English";
-
-      // Collect all distinct cover/edition images provided by Google Books
-      const rawLinks = info.imageLinks || {};
-      const candidateUrls = [
-        rawLinks.extraLarge,
-        rawLinks.large,
-        rawLinks.medium,
-        rawLinks.thumbnail,
-        rawLinks.smallThumbnail
-      ]
-        .filter(Boolean)
-        .map(u => u.replace(/^http:\/\//i, "https://").replace("&edge=curl", ""));
-
-      const galleryImages = [...new Set(candidateUrls)];
-      const coverUrl = galleryImages[0] || "";
-
-      const cleanSynopsis = info.description && info.description.trim()
-        ? info.description.trim()
-        : "No available synopsis.";
-
-      const marketModes = ["sale", "swap", "library"];
-      const marketType = marketModes[index % 3];
-
-      return {
-        id: cleanId,
-        title: info.title || "Untitled Work",
-        author: info.authors ? info.authors.slice(0, 2).join(", ") : "Unknown Author",
-        publisher: info.publisher || "Indie Press",
-        language: mappedLang,
-        format: info.categories?.[0]?.toLowerCase().includes("comic") ? "Komiks" : "Novel",
-        trope: "All",
-        rating: info.averageRating || 4.7,
-        trending: booksData.length + index + 1,
-        marketType: marketType,
-        price: marketType === "sale" ? 350 + (index * 35) : undefined,
-        condition: marketType === "swap" ? "Pre-Loved (Good)" : undefined,
-        seller: marketType === "sale" ? "Partner Bookstore" : "@kabanata_reader",
-        gallery: galleryImages,
-        image: coverUrl,
-        fallbackBg: fallbackGradients[index % fallbackGradients.length],
-        synopsis: cleanSynopsis,
-        reviews: [
-          info.ratingsCount
-            ? `"Rated ${info.averageRating || 4.7}/5 by ${info.ratingsCount} readers on Google Books."`
-            : '"Verified edition via Kabanata Global Catalog." — @kabanata_reads'
-        ]
-      };
-    });
 
     apiBooks.forEach(newBook => {
       if (!booksData.some(existing => existing.id === newBook.id)) {
@@ -791,30 +785,30 @@ async function fetchBooksFromAPI(searchTerm = "Philippine literature") {
       }
     });
 
-    appendDynamicTags(data.items);
+    appendDynamicTags(data.docs || []);
     renderExploreGrid(apiBooks);
   } catch (err) {
-    console.warn("Google Books unavailable, falling back to Open Library:", err.message);
+    console.warn("Backend proxy unavailable, falling back to direct Open Library:", err.message);
     await fetchFromOpenLibraryFallback(searchTerm);
   }
 }
 
-function appendDynamicTags(items) {
+function appendDynamicTags(docs) {
   const pillContainer = document.querySelector(".quick-pills");
   if (!pillContainer) return;
 
-  const discoveredCategories = new Set();
-  items.forEach(item => {
-    const cats = item.volumeInfo?.categories || [];
-    cats.forEach(rawCat => {
-      const cleanTag = rawCat.split("/")[0].trim();
+  const discoveredSubjects = new Set();
+  docs.forEach(doc => {
+    const subjects = doc.subject || [];
+    subjects.slice(0, 3).forEach(rawSubject => {
+      const cleanTag = rawSubject.split("/")[0].trim();
       if (cleanTag && cleanTag.length <= 22) {
-        discoveredCategories.add(cleanTag);
+        discoveredSubjects.add(cleanTag);
       }
     });
   });
 
-  discoveredCategories.forEach(tag => {
+  discoveredSubjects.forEach(tag => {
     const alreadyExists = Array.from(pillContainer.querySelectorAll(".pill"))
       .some(p => p.textContent.trim().toLowerCase() === tag.toLowerCase());
 
@@ -832,37 +826,11 @@ function appendDynamicTags(items) {
 
 async function fetchFromOpenLibraryFallback(searchTerm) {
   try {
-    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}&limit=12&fields=key,title,author_name,publisher,language,cover_i,ratings_average`;
+    const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(searchTerm)}&limit=12&fields=key,title,author_name,publisher,language,cover_i,ratings_average,subject`;
     const response = await fetch(url);
     const data = await response.json();
 
-    const apiBooks = (data.docs || []).map((doc, index) => {
-      const cleanId = doc.key.replace("/works/", "ol_");
-      const mappedLang = doc.language?.[0] === "tgl" ? "Tagalog" : "English";
-      const marketModes = ["sale", "swap", "library"];
-      const marketType = marketModes[index % 3];
-
-      return {
-        id: cleanId,
-        workKey: doc.key,
-        title: doc.title || "Untitled Work",
-        author: doc.author_name ? doc.author_name.slice(0, 2).join(", ") : "Unknown Author",
-        publisher: doc.publisher ? doc.publisher[0] : "Indie Press",
-        language: mappedLang,
-        format: "Novel",
-        trope: "All",
-        rating: doc.ratings_average ? Number(doc.ratings_average.toFixed(1)) : 4.6,
-        trending: booksData.length + index + 1,
-        marketType: marketType,
-        price: marketType === "sale" ? 350 + (index * 35) : undefined,
-        condition: marketType === "swap" ? "Pre-Loved (Good)" : undefined,
-        seller: marketType === "sale" ? "Partner Bookstore" : "@kabanata_reader",
-        image: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : "",
-        fallbackBg: fallbackGradients[index % fallbackGradients.length],
-        synopsis: "Loading full synopsis...",
-        reviews: ['"Discovered via Kabanata Global Catalog." — @kabanata_reads']
-      };
-    });
+    const apiBooks = mapOpenLibraryDocs(data.docs);
 
     apiBooks.forEach(newBook => {
       if (!booksData.some(existing => existing.id === newBook.id)) {
@@ -870,228 +838,10 @@ async function fetchFromOpenLibraryFallback(searchTerm) {
       }
     });
 
+    appendDynamicTags(data.docs || []);
     renderExploreGrid(apiBooks);
-  } catch (fallbackErr) {
-    console.error("Both APIs failed:", fallbackErr);
+  } catch (err) {
+    console.error("Open Library fallback failed:", err);
     filterBooks();
   }
 }
-
-/* ==================== BOOK DETAIL MODAL & INTERACTIVE CAROUSEL ==================== */
-let currentModalBookId = null;
-let modalSlides = [];
-let modalSlideIdx = 0;
-
-function openBookModal(bookId) {
-  const book = getBookById(bookId);
-  if (!book) return;
-
-  forceHidePopover();
-  currentModalBookId = bookId;
-
-  // Build carousel slides: use API gallery if available, plus styled edition card
-  modalSlides = [];
-  const imageSources = (book.gallery && book.gallery.length > 0)
-    ? book.gallery
-    : (book.image ? [book.image] : []);
-
-  imageSources.forEach((src, i) => {
-    modalSlides.push({
-      type: "image",
-      src,
-      caption: i === 0 ? "Primary Cover Edition" : `Alternate Edition / Scan ${i + 1}`
-    });
-  });
-
-  // Always include a Kabanata typography/edition card as a slide (or primary slide if no image exists)
-  modalSlides.push({
-    type: "card",
-    caption: `${book.publisher} • ${book.format}`
-  });
-
-  modalSlideIdx = 0;
-  renderModalCarousel(book);
-
-  // Populate metadata, synopsis, and reviews
-  document.getElementById("modalBadges").innerHTML = `
-    <span class="pop-tag">${book.publisher}</span>
-    <span class="pop-tag format">${book.format}</span>
-    <span class="meta-chip">${book.language}</span>
-  `;
-  document.getElementById("modalBookTitle").textContent = book.title;
-  document.getElementById("modalBookAuthor").textContent = `by ${book.author}`;
-  document.getElementById("modalRatingRow").textContent = `★★★★★ (${book.rating})`;
-  renderSynopsisText(document.getElementById("modalBookSynopsis"), book.synopsis);
-
-  syncModalActionButtons(book);
-  renderModalReviews(book);
-
-  document.getElementById("bookModalOverlay").classList.add("active");
-
-  // If this book came from Open Library and hasn't loaded its full work description yet, fetch it now
-  if (book.workKey && book.synopsis === "Loading full synopsis...") {
-    fetch(`https://openlibrary.org${book.workKey}.json`)
-      .then(res => res.json())
-      .then(workData => {
-        const rawDesc = typeof workData.description === "string"
-          ? workData.description
-          : workData.description?.value;
-
-       book.synopsis = rawDesc && rawDesc.trim()
-          ? rawDesc.split("([source]")[0].trim()
-          : "No available synopsis.";
-
-        if (currentModalBookId === book.id) {
-          renderSynopsisText(document.getElementById("modalBookSynopsis").textContent = book.synopsis);
-        }
-      })
-      .catch(() => {
-        book.synopsis = "No available synopsis.";
-        if (currentModalBookId === book.id) {
-          renderSynopsisText(document.getElementById("modalBookSynopsis"), book.synopsis);
-        }
-      });
-  }
-}
-
-function renderModalCarousel(book) {
-  const viewport = document.getElementById("modalSlideViewport");
-  const dotsContainer = document.getElementById("modalCarouselDots");
-  const captionEl = document.getElementById("modalCarouselCaption");
-  const prevBtn = document.getElementById("modalPrevBtn");
-  const nextBtn = document.getElementById("modalNextBtn");
-
-  const currentSlide = modalSlides[modalSlideIdx];
-
-  if (currentSlide.type === "image") {
-    viewport.innerHTML = `<img src="${currentSlide.src}" alt="${book.title}" onerror="modalSlides.splice(${modalSlideIdx}, 1); modalSlideIdx = 0; renderModalCarousel(getBookById('${book.id}'));">`;
-  } else {
-    viewport.innerHTML = `
-      <div class="modal-slide-fallback" style="background: ${book.fallbackBg || 'linear-gradient(145deg, #5E2724, #23120B)'};">
-        <span class="fallback-pub">${book.publisher}</span>
-        <div>
-          <div class="fallback-title" style="margin-bottom:0.4rem;">${book.title}</div>
-          <div style="font-size:0.82rem; opacity:0.85;">by ${book.author}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  captionEl.textContent = `${currentSlide.caption} (${modalSlideIdx + 1}/${modalSlides.length})`;
-
-  const hasMultiple = modalSlides.length > 1;
-  prevBtn.classList.toggle("hidden", !hasMultiple);
-  nextBtn.classList.toggle("hidden", !hasMultiple);
-
-  dotsContainer.innerHTML = hasMultiple
-    ? modalSlides.map((_, idx) => `
-        <button class="carousel-dot ${idx === modalSlideIdx ? 'active' : ''}"
-                onclick="goToModalSlide(${idx})"
-                aria-label="Slide ${idx + 1}"></button>
-      `).join("")
-    : "";
-}
-
-function stepModalCarousel(delta) {
-  if (!currentModalBookId || modalSlides.length <= 1) return;
-  modalSlideIdx = (modalSlideIdx + delta + modalSlides.length) % modalSlides.length;
-  renderModalCarousel(getBookById(currentModalBookId));
-}
-
-function goToModalSlide(index) {
-  if (!currentModalBookId) return;
-  modalSlideIdx = index;
-  renderModalCarousel(getBookById(currentModalBookId));
-}
-
-function syncModalActionButtons(book) {
-  const tbrBtn = document.getElementById("modalTbrBtn");
-  if (tbrSet.has(book.id)) {
-    tbrBtn.textContent = "✓ Saved on TBR Shelf";
-    tbrBtn.classList.add("added");
-  } else {
-    tbrBtn.textContent = "+ Add to TBR Shelf";
-    tbrBtn.classList.remove("added");
-  }
-
-  const shopBtn = document.getElementById("modalShopBtn");
-  if (book.marketType === "sale") {
-    shopBtn.textContent = `Buy ₱${book.price}`;
-    shopBtn.style.display = "inline-block";
-  } else if (book.marketType === "swap") {
-    shopBtn.textContent = "Propose Swap";
-    shopBtn.style.display = "inline-block";
-  } else {
-    shopBtn.style.display = "none";
-  }
-}
-
-function toggleCurrentModalTBR() {
-  if (!currentModalBookId) return;
-  toggleTBR(currentModalBookId);
-  const book = getBookById(currentModalBookId);
-  if (book) syncModalActionButtons(book);
-}
-
-function handleModalShopAction() {
-  if (!currentModalBookId) return;
-  const book = getBookById(currentModalBookId);
-  if (!book) return;
-  if (book.marketType === "sale") {
-    addToCart(book.id);
-  } else if (book.marketType === "swap") {
-    showToast(`Swap request draft opened for "${book.title}"!`);
-  }
-}
-
-function renderModalReviews(book) {
-  const listEl = document.getElementById("modalReviewsList");
-  const countEl = document.getElementById("modalReviewCount");
-  const reviews = book.reviews || [];
-  countEl.textContent = reviews.length;
-
-  listEl.innerHTML = reviews.length === 0
-    ? `<p style="font-size:0.82rem; color:var(--text-muted);">No community reviews yet—be the first to share your thoughts!</p>`
-    : reviews.map(r => `<div class="modal-review-item">${r}</div>`).join("");
-}
-
-function submitBookReview(event) {
-  event.preventDefault();
-  if (!currentModalBookId) return;
-  const book = getBookById(currentModalBookId);
-  if (!book) return;
-
-  const rawHandle = document.getElementById("reviewHandleInput").value.trim();
-  const handle = rawHandle ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`) : "@romar_reads";
-  const starsCount = Number(document.getElementById("reviewRatingSelect").value);
-  const comment = document.getElementById("reviewTextInput").value.trim();
-  if (!comment) return;
-
-  const starsStr = "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
-  book.reviews.unshift(`"${comment}" — ${handle} (${starsStr})`);
-
-  document.getElementById("reviewTextInput").value = "";
-  renderModalReviews(book);
-  showToast(`Review posted for "${book.title}"!`);
-}
-
-function closeBookModal(event) {
-  if (event.target.id === "bookModalOverlay") forceCloseBookModal();
-}
-
-function forceCloseBookModal() {
-  document.getElementById("bookModalOverlay").classList.remove("active");
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") forceCloseBookModal();
-});
-
-/* Initialize */
-document.addEventListener("DOMContentLoaded", () => {
-  renderTrendingMarquee();
-  const firstPubPill = document.querySelector(".pub-pill");
-  if (firstPubPill) filterShowcase("All", firstPubPill);
-  filterBooks();
-  updateShelfCounter();
-});
