@@ -942,7 +942,7 @@ function openBookModal(bookId) {
           : "No available synopsis.";
 
         if (currentModalBookId === book.id) {
-          document.getElementById("modalBookSynopsis").textContent = book.synopsis;
+          renderSynopsisText(document.getElementById("modalBookSynopsis").textContent = book.synopsis);
         }
       })
       .catch(() => {
