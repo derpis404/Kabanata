@@ -97,7 +97,7 @@ const booksData = [
     marketType: "sale",
     price: 350,
     seller: "Avenida Books Official",
-    image: "",
+    image: "assests/book5.jpg",
     fallbackBg: "linear-gradient(145deg, #23120B, #5E2724)",
     synopsis: "When the police are baffled by supernatural crimes in Manila, they call Alexandra Trese—a detective navigating deals with tikbalang, aswang, and elemental clans.",
     reviews: [
@@ -118,7 +118,7 @@ const booksData = [
     marketType: "swap",
     condition: "Pre-Loved",
     seller: "@sitio_badua",
-    image: "",
+    image: "assests/book6.jpg",
     fallbackBg: "linear-gradient(145deg, #8C583A, #23120B)",
     synopsis: "After every other player in an online RPG tournament dies mysteriously, teenager Janus discovers that ancient Philippine mythological beings are hunting him in the real world.",
     reviews: [
@@ -138,7 +138,7 @@ const booksData = [
     trending: 7,
     marketType: "library",
     seller: "Community Archive",
-    image: "",
+    image: "assests/book7.jpg",
     fallbackBg: "linear-gradient(145deg, #76332F, #23120B)",
     synopsis: "Amanda Bartolome navigates motherhood, marriage, and political awakening as her five sons come of age during the turbulent Martial Law years in the Philippines.",
     reviews: [
@@ -159,7 +159,7 @@ const booksData = [
     marketType: "sale",
     price: 295,
     seller: "Visprint Archive Partner",
-    image: "",
+    image: "assests/book8.jpg",
     fallbackBg: "linear-gradient(145deg, #8C583A, #5E2724)",
     synopsis: "A hilarious and nostalgic look back at Filipino public school life—from terror teachers and cafeteria chaos to college survival.",
     reviews: [
@@ -180,7 +180,7 @@ const booksData = [
     marketType: "swap",
     condition: "Collector's Paperback",
     seller: "@upd_komiks",
-    image: "",
+    image: "assests/book9.jpg",
     fallbackBg: "linear-gradient(145deg, #4E5438, #342113)",
     synopsis: "UP Diliman student Nicole Lacson answers a mysterious summons and teams up with fellow students to capture escaped engkantos roaming Metro Manila.",
     reviews: [
