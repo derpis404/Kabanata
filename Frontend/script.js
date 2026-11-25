@@ -1,3 +1,61 @@
+const API_BASE_URL = "https://localhost:7151/api";
+const ACTIVE_USER_HANDLE = "@kabanata_reader";
+
+async function syncWithBackend() {
+  try {
+    // 1. Load books & persisted reviews from SQLite
+    const booksRes = await fetch(`${API_BASE_URL}/books`);
+    if (booksRes.ok) {
+      const dbBooks = await booksRes.json();
+      dbBooks.forEach(dbBook => {
+        const formattedReviews = (dbBook.reviews || []).map(r => {
+          const stars = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+          return `"${r.comment}" — ${r.handle} (${stars})`;
+        });
+
+        const existing = booksData.find(b => b.id === dbBook.slug);
+        if (existing) {
+          if (formattedReviews.length > 0) existing.reviews = formattedReviews;
+        } else {
+          booksData.push({
+            id: dbBook.slug,
+            title: dbBook.title,
+            author: dbBook.author,
+            publisher: dbBook.publisher,
+            language: dbBook.language,
+            format: dbBook.format,
+            trope: dbBook.trope,
+            rating: dbBook.rating,
+            trending: dbBook.trending,
+            marketType: dbBook.marketType,
+            price: dbBook.price,
+            condition: dbBook.condition,
+            seller: dbBook.seller,
+            image: dbBook.image,
+            fallbackBg: dbBook.fallbackBg,
+            synopsis: dbBook.synopsis,
+            reviews: formattedReviews
+          });
+        }
+      });
+    }
+
+    // 2. Load saved TBR shelf items from SQLite
+    const shelfRes = await fetch(`${API_BASE_URL}/shelf?handle=${encodeURIComponent(ACTIVE_USER_HANDLE)}`);
+    if (shelfRes.ok) {
+      const shelfItems = await shelfRes.json();
+      tbrSet = new Set(shelfItems.map(item => item.book?.slug).filter(Boolean));
+    }
+
+    renderTrendingMarquee();
+    filterBooks();
+    updateShelfCounter();
+  } catch {
+    console.warn("Backend offline — running with local starter data.");
+  }
+}
+
+
 /* ==================== BOOK DATABASE (WITH YOUR ASSETS + CATALOG) ==================== */
 const booksData = [
   {
@@ -227,6 +285,48 @@ const extraSpotlightBooks = {
     marketType: "library",
     synopsis: "A gripping story of activists searching for their missing loved ones and reckoning with the personal cost of resistance.",
     reviews: ['"Heart-wrenching and masterfully written." — @manila_reads']
+  },
+  landscapes: {
+    id: "landscapes",
+    title: "Landscapes of Feeling",
+    author: "Danton Remoto",
+    image: "assets/landscapes.jpg",
+    publisher: "Penguin SEA",
+    language: "English",
+    format: "Non-Fiction",
+    rating: 4.9,
+    marketType: "library",
+    fallbackBg: "linear-gradient(145deg, #5E2724, #23120B)",
+    synopsis: "Over the last thirty years, Danton Remoto has offered comfort and consistency to his readers through his travel essays in some of the biggest Filipino newspapers. Landscapes of Feeling stitches them together in a patchwork quilt, dyed in the hues of déjà vu.",
+    reviews: ['"Journey into the forgotten places of memory and the blazing present." — Penguin Books SEA']
+  },
+  vineofhearts: {
+    id: "vineofhearts",
+    title: "Vine of Hearts",
+    author: "Julie Soto",
+    publisher: "Forever / Grand Central",
+    language: "English",
+    format: "Novel",
+    rating: 4.6,
+    marketType: "library",
+    image: "assets/vine-of-hearts.jpg",
+    fallbackBg: "linear-gradient(145deg, #4E5438, #23120B)",
+    synopsis: "Return to a world sparkling with dark magic and desire in The Evermore Trilogy #2—the sequel to Rose in Chains, where Briony Rosewood must navigate the powerful Hearst family's court.",
+    reviews: ['"Expected publication: December 1, 2026 — Rated 4.64/5 by early ARC readers." — @romantasy_ph']
+  },
+  firesofdecember: {
+    id: "firesofdecember",
+    title: "The Fires of December",
+    author: "Brandon Sanderson",
+    publisher: "Tor Publishing Group",
+    language: "English",
+    format: "Novel",
+    rating: 4.9,
+    marketType: "library",
+    image: "assets/fires-of-december.jpg",
+    fallbackBg: "linear-gradient(145deg, #5E2724, #23120B)",
+    synopsis: "In this standalone Cosmere novel told by Hoid, a young woman named December discovers a devastating plague threatening a forgotten land sustained by colorful rivers of demon blood.",
+    reviews: ['"Expected publication: December 8, 2026 — Standalone Cosmere adventure." — @cosmere_mnl']
   }
 };
 
@@ -329,7 +429,7 @@ function renderTrendingMarquee() {
       trendingBooks.map(b => `
         <li class="card-item">
           <a href="#" class="card-link" ${isDuplicate ? 'tabindex="-1"' : ''}
-             onmouseenter="showPopover(event, '${b.id}')"
+             onmouseenter="showBookPopover(event, '${b.id}')"
              onmouseleave="scheduleHidePopover()"
              onclick="openBookModal('${b.id}'); return false;">
             <div class="cover-frame" style="background: ${b.fallbackBg};">
@@ -407,7 +507,7 @@ function renderSynopsisText(element, text) {
   }
 }
 
-function showPopover(event, bookId) {
+function showBookPopover(event, bookId) {
   cancelHidePopover();
   const book = getBookById(bookId);
   if (!book) return;
@@ -515,7 +615,7 @@ function handlePopoverShopAction() {
 }
 
 /* ==================== TBR & CART ACTIONS ==================== */
-function toggleTBR(bookId) {
+async function toggleTBR(bookId) {
   const book = getBookById(bookId);
   if (!book) return;
 
@@ -532,6 +632,24 @@ function toggleTBR(bookId) {
 
   updateShelfCounter();
   filterBooks();
+
+  // Persist to SQLite backend
+  try {
+    await fetch(`${API_BASE_URL}/shelf/toggle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userHandle: ACTIVE_USER_HANDLE,
+        bookSlug: book.id,
+        title: book.title,
+        author: book.author,
+        publisher: book.publisher,
+        image: book.image || ""
+      })
+    });
+  } catch {
+    console.warn("TBR saved locally only (backend offline).");
+  }
 }
 
 function addToCart(bookId) {
@@ -733,7 +851,7 @@ function renderExploreGrid(list) {
     }
 
     return `
-      <article class="book-card" onclick="openBookModal('${b.id}')" onmouseenter="showPopover(event, '${b.id}')" onmouseleave="scheduleHidePopover()">
+      <article class="book-card" onclick="openBookModal('${b.id}')" onmouseenter="showBookPopover(event, '${b.id}')" onmouseleave="scheduleHidePopover()">
         <div class="book-cover" style="background: ${b.fallbackBg}">
           <div class="cover-top-row">
             <span class="cover-tag">${b.publisher}</span>
@@ -770,23 +888,66 @@ function resetFilters() {
   filterBooks();
 }
 
-/* ==================== SHOWCASE & TRIVIA ==================== */
+/* ==================== SHOWCASE CAROUSEL & TRIVIA ==================== */
+/* ==================== SHOWCASE CAROUSEL & TRIVIA ==================== */
 function filterShowcase(pub, btn) {
   document.querySelectorAll(".pub-pill").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  const showcasePool = booksData.slice(0, 4);
-  const list = pub === "All" ? showcasePool : showcasePool.filter(i => i.publisher === pub);
-  document.getElementById("showcaseRow").innerHTML = list.map(i => `
-    <div class="showcase-card" onmouseenter="showPopover(event, '${i.id}')" onmouseleave="scheduleHidePopover()">
+  if (btn) btn.classList.add("active");
+
+  // Use all 9 starter Pinoy Lit entries instead of just the first 4
+  const showcasePool = booksData.slice(0, 9);
+  const list = pub === "All"
+    ? showcasePool
+    : showcasePool.filter(i => i.publisher.toLowerCase().includes(pub.toLowerCase()));
+
+  const row = document.getElementById("showcaseRow");
+  row.scrollLeft = 0;
+
+  row.innerHTML = list.map(i => `
+    <div class="showcase-card"
+         onclick="openBookModal('${i.id}')"
+         onmouseenter="showBookPopover(event, '${i.id}')"
+         onmouseleave="scheduleHidePopover()">
       <div class="showcase-cover" style="background: ${i.fallbackBg}">
-        ${i.image ? `<img src="${i.image}" alt="${i.title}" class="showcase-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">` : ''}
-        <span style="position:relative; z-index:2; display:${i.image ? 'none' : 'inline'};">${i.title}</span>
+        ${i.image ? `<img src="${i.image}" alt="${i.title}" class="showcase-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : ''}
+        <div class="cover-fallback" style="position:relative; z-index:2; display:${i.image ? 'none' : 'flex'}; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:0.75rem; text-align:center;">
+          <span class="fallback-pub">${i.publisher}</span>
+          <span class="fallback-title">${i.title}</span>
+        </div>
       </div>
-      <div style="font-weight:700; font-size:0.85rem;">${i.title}</div>
+      <div style="font-weight:700; font-size:0.85rem; margin-top:0.5rem;">${i.title}</div>
       <div style="font-size:0.75rem; color:var(--text-muted);">${i.publisher}</div>
     </div>
   `).join("");
+
+  updateShowcaseArrows();
 }
+
+function scrollShowcase(direction) {
+  const row = document.getElementById("showcaseRow");
+  if (!row) return;
+  const scrollAmount = row.clientWidth * 0.85;
+  row.scrollBy({ left: direction * scrollAmount, behavior: "smooth" });
+  setTimeout(updateShowcaseArrows, 350);
+}
+
+function updateShowcaseArrows() {
+  const row = document.getElementById("showcaseRow");
+  const prevBtn = document.getElementById("showcasePrevBtn");
+  const nextBtn = document.getElementById("showcaseNextBtn");
+  if (!row || !prevBtn || !nextBtn) return;
+
+  const canScroll = row.scrollWidth > row.clientWidth + 8;
+  prevBtn.classList.toggle("hidden", !canScroll || row.scrollLeft <= 5);
+  nextBtn.classList.toggle("hidden", !canScroll || row.scrollLeft + row.clientWidth >= row.scrollWidth - 5);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const showcaseRow = document.getElementById("showcaseRow");
+  if (showcaseRow) {
+    showcaseRow.addEventListener("scroll", updateShowcaseArrows);
+  }
+});
 
 const triviaFacts = [
   "Jose Rizal's original manuscript of Noli Me Tangere was printed in Berlin in 1887 with financial help from Dr. Maximo Viola.",
@@ -817,7 +978,6 @@ const fallbackGradients = [
   "linear-gradient(145deg, #8C583A, #23120B)"
 ];
 
-const BACKEND_URL = "http://localhost:5109"; // Replace with your deployed ASP.NET Core URL when hosted
 
 
 function mapOpenLibraryDocs(docs) {
@@ -871,9 +1031,8 @@ function mapOpenLibraryDocs(docs) {
 
 async function fetchBooksFromAPI(searchTerm) {
   try {
-    const response = await fetch(
-      `${BACKEND_URL}/api/books/search?q=${encodeURIComponent(searchTerm)}`
-    );
+    const url = `${API_BASE_URL}/books/search?q=${encodeURIComponent(searchTerm)}`;
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error("Backend request failed");
@@ -1137,14 +1296,14 @@ function renderModalReviews(book) {
     : reviews.map(r => `<div class="modal-review-item">${r}</div>`).join("");
 }
 
-function submitBookReview(event) {
+async function submitBookReview(event) {
   event.preventDefault();
   if (!currentModalBookId) return;
   const book = getBookById(currentModalBookId);
   if (!book) return;
 
   const rawHandle = document.getElementById("reviewHandleInput").value.trim();
-  const handle = rawHandle ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`) : "@romar_reads";
+  const handle = rawHandle ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`) : "@kabanata_reader";
   const starsCount = Number(document.getElementById("reviewRatingSelect").value);
   const comment = document.getElementById("reviewTextInput").value.trim();
   if (!comment) return;
@@ -1152,6 +1311,24 @@ function submitBookReview(event) {
   const starsStr = "★".repeat(starsCount) + "☆".repeat(5 - starsCount);
   book.reviews.unshift(`"${comment}" — ${handle} (${starsStr})`);
 
+  try {
+  await fetch(`${API_BASE_URL}/reviews`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      bookSlug: book.id,
+      title: book.title,
+      author: book.author,
+      publisher: book.publisher,
+      image: book.image || "",
+      handle: handle,
+      rating: starsCount,
+      comment: comment
+    })
+  });
+} catch {
+  console.warn("Review saved locally only (backend offline).");
+}
   // Save this book's updated reviews
   savedBookReviews[book.id] = [...book.reviews];
   saveStoredData("kabanata_reviews", savedBookReviews);
@@ -1173,6 +1350,35 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") forceCloseBookModal();
 });
 
+/* ==================== UPCOMING RELEASE COUNTDOWNS ==================== */
+function updateReleaseCountdowns() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  document.querySelectorAll("[data-release-date]").forEach(el => {
+    const rawDate = el.getAttribute("data-release-date");
+    const target = new Date(`${rawDate}T00:00:00`);
+    if (Number.isNaN(target.getTime())) return;
+
+    const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+    const formattedDate = target.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+
+    if (diffDays > 1) {
+      el.textContent = `⏳ ${diffDays}d left • ${formattedDate}`;
+    } else if (diffDays === 1) {
+      el.textContent = `🔥 Tomorrow • ${formattedDate}`;
+    } else if (diffDays === 0) {
+      el.textContent = `🎉 Out Today!`;
+    } else {
+      el.textContent = `✓ Released • ${formattedDate}`;
+    }
+  });
+}
+
 /* Initialize */
 document.addEventListener("DOMContentLoaded", () => {
   renderTrendingMarquee();
@@ -1180,4 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (firstPubPill) filterShowcase("All", firstPubPill);
   filterBooks();
   updateShelfCounter();
+  syncWithBackend();
+  updateReleaseCountdowns();
 });
+

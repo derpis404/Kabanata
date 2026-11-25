@@ -70,29 +70,57 @@
     <section class="tri-column-section">
       <!-- Left: Author of the Day -->
       <div class="author-col">
-        <div class="author-label">all about</div>
-        <div class="author-name">Lualhati Bautista</div>
+        <div class="author-spotlight-badge">✦ Author of the Day</div>
+        <h2 class="author-name">Lualhati Bautista</h2>
+
         <div class="author-bio-top">
-          <img 
+          <img
             src="assets/lualhati.jpg"
-            alt = "Portrait"
+            alt="Lualhati Bautista portrait"
             class="author-photo"
           />
-        <div>  
+          <div class="author-meta-list">
             <p><strong>Born:</strong> Dec 2, 1945</p>
             <p><strong>Based in:</strong> Tondo, Manila</p>
-            <p><strong>Genres:</strong> Social Realism, Historical Fiction</p>
+            <p><strong>Honors:</strong> Palanca Hall of Famer</p>
+            <div class="author-genre-chips">
+              <span class="meta-chip">Social Realism</span>
+              <span class="meta-chip">Historical Fiction</span>
+            </div>
           </div>
         </div>
+
+        <blockquote class="author-quote">
+          “Ang payapang pampang ay para lang sa mga pangahas na sasalunga sa alimpuyo ng mga alon.”
+          <span>— Dekada ’70</span>
+        </blockquote>
+
         <p class="author-desc">
-          One of the foremost Filipino female novelists in the history of contemporary Philippine literature, celebrated for her honest realism and courageous exploration of women's issues during the Martial Law era.
+          One of the foremost Filipino female novelists in contemporary Philippine literature, celebrated for her fearless realism and deeply human exploration of women's lives during the Martial Law era.
         </p>
-        <h4 class="sub-heading">featured works</h4>
+        <a
+          href="https://en.wikipedia.org/wiki/Lualhati_Bautista"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="author-wiki-link"
+        >
+          Read full biography on Wikipedia ↗
+        </a>
+
+        <div class="featured-works-header">
+          <h4 class="sub-heading">featured works</h4>
+          <a href="#" class="author-explore-link" onclick="exploreAuthorBooks('Lualhati Bautista'); return false;">View in Catalog →</a>
+        </div>
+
         <div class="mini-works-grid">
-          <div class="mini-work" onmouseenter="showPopover(event, 'dekada')" onmouseleave="scheduleHidePopover()">Dekada '70</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'bata')" onmouseleave="scheduleHidePopover()">Bata, Bata...</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'gapo')" onmouseleave="scheduleHidePopover()">GAPÔ</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'desaparesidos')" onmouseleave="scheduleHidePopover()">Desaparesidos</div>
+          <div class="mini-work has-cover" style="background-image: url('assets/book7.jpg');" onmouseenter="showBookPopover(event, 'dekada')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('dekada')">
+          </div>
+          <div class="mini-work" style="background-image: url('assets/bbpkg.png');" onmouseenter="showBookPopover(event, 'bata')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('bata')">
+          </div>
+          <div class="mini-work" style="background-image: url('assets/gapo.jpg');" onmouseenter="showBookPopover(event, 'gapo')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('gapo')">
+          </div>
+          <div class="mini-work" style="background-image: url('assets/desaparesidos.jpg');" onmouseenter="showBookPopover(event, 'desaparesidos')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('desaparesidos')">
+          </div>
         </div>
       </div>
 
@@ -114,26 +142,31 @@
         </div>
       </div>
 
-      <!-- Right: Upcoming Releases -->
+     <!-- Right: Upcoming Releases -->
       <div class="upcoming-col">
         <div class="upcoming-header">
           <h3>upcoming<br>releases</h3>
           <div class="date-circle">
-            <span>OCT</span>12
+            <span>JAN</span>19
           </div>
         </div>
         <p class="release-label">▷ releasing soon</p>
-        <div class="featured-upcoming" onmouseenter="showPopover(event, 'trese')" onmouseleave="scheduleHidePopover()">
-          <span class="countdown-pill">⏳ 5 Days Left</span>
-          <div>
-            <h4 class="upcoming-book-title">Trese Vol. 8: Shadow Witness</h4>
-            <p class="upcoming-book-quote">"Most anticipated komik continuation of the year!" — Early ARC Review</p>
+        <div class="featured-upcoming" onmouseenter="showBookPopover(event, 'landscapes')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('landscapes')">
+          <img src="assets/landscapes.jpg" alt="Landscapes of Feeling cover" class="upcoming-cover-portrait" />
+          <div class="upcoming-details">
+            <span class="countdown-pill" data-release-date="2027-01-19">📅 Jan 19, 2027</span>
+            <h4 class="upcoming-book-title">Landscapes of Feeling</h4>
+            <p class="upcoming-book-quote">"Journey into the forgotten places of memory and the blazing present" — Danton Remoto</p>
           </div>
         </div>
         <p class="release-label">▷ later this month</p>
         <div class="mini-works-grid">
-          <div class="mini-work" style="background-color: var(--toasted-caramel);" onmouseenter="showPopover(event, 'ella')" onmouseleave="scheduleHidePopover()">Ella Arcangel Vol. 2</div>
-          <div class="mini-work" style="background-color: var(--dark-chocolate);" onmouseenter="showPopover(event, 'mamasusan')" onmouseleave="scheduleHidePopover()">Mama Susan Special Ed.</div>
+          <div class="mini-work" style="background-image: url('assets/vine_of_hearts.jpg');" onmouseenter="showBookPopover(event, 'vineofhearts')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('vineofhearts')">
+            <span class="mini-release-badge" data-release-date="2026-12-01">Dec 1, 2026</span>
+          </div>
+          <div class="mini-work" style="background-image: url('assets/fires_of_december.jpg');" onmouseenter="showBookPopover(event, 'firesofdecember')" onmouseleave="scheduleHidePopover()" onclick="openBookModal('firesofdecember')">
+            <span class="mini-release-badge" data-release-date="2026-12-08">Dec 8, 2026</span>
+          </div>
         </div>
       </div>
     </section>
@@ -148,9 +181,14 @@
             <button class="pub-pill" onclick="filterShowcase('Anvil', this)">Anvil</button>
             <button class="pub-pill" onclick="filterShowcase('Visprint', this)">Visprint</button>
             <button class="pub-pill" onclick="filterShowcase('Komiket', this)">Komiket / Indie</button>
+            <button class="pub-pill" onclick="filterShowcase('Adarna', this)">Adarna</button>
           </div>
         </div>
-        <div class="showcase-row" id="showcaseRow"></div>
+        <div class="showcase-carousel-wrapper">
+          <button class="showcase-nav-btn prev" id="showcasePrevBtn" onclick="scrollShowcase(-1)" aria-label="Previous books">‹</button>
+          <div class="showcase-row" id="showcaseRow"></div>
+          <button class="showcase-nav-btn next" id="showcaseNextBtn" onclick="scrollShowcase(1)" aria-label="Next books">›</button>
+        </div>
       </div>
 
       <div class="trivia-box-large">
@@ -379,11 +417,13 @@
 
           <form class="modal-review-form" onsubmit="submitBookReview(event)">
             <div class="review-form-row">
-              <input type="text" id="reviewHandleInput" placeholder="@your_handle (default: @romar_reads)" maxlength="28" />
+              <input type="text" id="reviewHandleInput" placeholder="@your_handle (default: @kabanata_reader)" maxlength="28" />
               <select id="reviewRatingSelect" aria-label="Star rating">
                 <option value="5">★★★★★ (5.0)</option>
                 <option value="4">★★★★☆ (4.0)</option>
                 <option value="3">★★★☆☆ (3.0)</option>
+                <option value="2">★★☆☆☆ (2.0)</option>
+                <option value="1">★☆☆☆☆ (1.0)</option>
               </select>
             </div>
             <textarea id="reviewTextInput" rows="2" placeholder="Share your thoughts or favorite quote from this book..." required></textarea>
