@@ -285,6 +285,48 @@ const extraSpotlightBooks = {
     marketType: "library",
     synopsis: "A gripping story of activists searching for their missing loved ones and reckoning with the personal cost of resistance.",
     reviews: ['"Heart-wrenching and masterfully written." — @manila_reads']
+  },
+  landscapes: {
+    id: "landscapes",
+    title: "Landscapes of Feeling",
+    author: "Danton Remoto",
+    image: "assets/landscapes.jpg",
+    publisher: "Penguin SEA",
+    language: "English",
+    format: "Non-Fiction",
+    rating: 4.9,
+    marketType: "library",
+    fallbackBg: "linear-gradient(145deg, #5E2724, #23120B)",
+    synopsis: "Over the last thirty years, Danton Remoto has offered comfort and consistency to his readers through his travel essays in some of the biggest Filipino newspapers. Landscapes of Feeling stitches them together in a patchwork quilt, dyed in the hues of déjà vu.",
+    reviews: ['"Journey into the forgotten places of memory and the blazing present." — Penguin Books SEA']
+  },
+  vineofhearts: {
+    id: "vineofhearts",
+    title: "Vine of Hearts",
+    author: "Julie Soto",
+    publisher: "Forever / Grand Central",
+    language: "English",
+    format: "Novel",
+    rating: 4.6,
+    marketType: "library",
+    image: "assets/vine-of-hearts.jpg",
+    fallbackBg: "linear-gradient(145deg, #4E5438, #23120B)",
+    synopsis: "Return to a world sparkling with dark magic and desire in The Evermore Trilogy #2—the sequel to Rose in Chains, where Briony Rosewood must navigate the powerful Hearst family's court.",
+    reviews: ['"Expected publication: December 1, 2026 — Rated 4.64/5 by early ARC readers." — @romantasy_ph']
+  },
+  firesofdecember: {
+    id: "firesofdecember",
+    title: "The Fires of December",
+    author: "Brandon Sanderson",
+    publisher: "Tor Publishing Group",
+    language: "English",
+    format: "Novel",
+    rating: 4.9,
+    marketType: "library",
+    image: "assets/fires-of-december.jpg",
+    fallbackBg: "linear-gradient(145deg, #5E2724, #23120B)",
+    synopsis: "In this standalone Cosmere novel told by Hoid, a young woman named December discovers a devastating plague threatening a forgotten land sustained by colorful rivers of demon blood.",
+    reviews: ['"Expected publication: December 8, 2026 — Standalone Cosmere adventure." — @cosmere_mnl']
   }
 };
 
@@ -1308,6 +1350,35 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") forceCloseBookModal();
 });
 
+/* ==================== UPCOMING RELEASE COUNTDOWNS ==================== */
+function updateReleaseCountdowns() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  document.querySelectorAll("[data-release-date]").forEach(el => {
+    const rawDate = el.getAttribute("data-release-date");
+    const target = new Date(`${rawDate}T00:00:00`);
+    if (Number.isNaN(target.getTime())) return;
+
+    const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+    const formattedDate = target.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
+
+    if (diffDays > 1) {
+      el.textContent = `⏳ ${diffDays}d left • ${formattedDate}`;
+    } else if (diffDays === 1) {
+      el.textContent = `🔥 Tomorrow • ${formattedDate}`;
+    } else if (diffDays === 0) {
+      el.textContent = `🎉 Out Today!`;
+    } else {
+      el.textContent = `✓ Released • ${formattedDate}`;
+    }
+  });
+}
+
 /* Initialize */
 document.addEventListener("DOMContentLoaded", () => {
   renderTrendingMarquee();
@@ -1315,5 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (firstPubPill) filterShowcase("All", firstPubPill);
   filterBooks();
   updateShelfCounter();
-  syncWithBackend(); 
+  syncWithBackend();
+  updateReleaseCountdowns();
 });
+
