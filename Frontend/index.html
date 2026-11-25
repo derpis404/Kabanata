@@ -85,10 +85,10 @@
         </p>
         <h4 class="sub-heading">featured works</h4>
         <div class="mini-works-grid">
-          <div class="mini-work" onmouseenter="showPopover(event, 'dekada')" onmouseleave="scheduleHidePopover()">Dekada '70</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'bata')" onmouseleave="scheduleHidePopover()">Bata, Bata...</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'gapo')" onmouseleave="scheduleHidePopover()">GAPÔ</div>
-          <div class="mini-work" onmouseenter="showPopover(event, 'desaparesidos')" onmouseleave="scheduleHidePopover()">Desaparesidos</div>
+          <div class="mini-work" onmouseenter="showBookPopover(event, 'dekada')" onmouseleave="scheduleHidePopover()">Dekada '70</div>
+          <div class="mini-work" onmouseenter="showBookPopover(event, 'bata')" onmouseleave="scheduleHidePopover()">Bata, Bata...</div>
+          <div class="mini-work" onmouseenter="showBookPopover(event, 'gapo')" onmouseleave="scheduleHidePopover()">GAPÔ</div>
+          <div class="mini-work" onmouseenter="showBookPopover(event, 'desaparesidos')" onmouseleave="scheduleHidePopover()">Desaparesidos</div>
         </div>
       </div>
 
@@ -119,7 +119,7 @@
           </div>
         </div>
         <p class="release-label">▷ releasing soon</p>
-        <div class="featured-upcoming" onmouseenter="showPopover(event, 'trese')" onmouseleave="scheduleHidePopover()">
+        <div class="featured-upcoming" onmouseenter="showBookPopover(event, 'trese')" onmouseleave="scheduleHidePopover()">
           <span class="countdown-pill">⏳ 5 Days Left</span>
           <div>
             <h4 class="upcoming-book-title">Trese Vol. 8: Shadow Witness</h4>
@@ -128,8 +128,8 @@
         </div>
         <p class="release-label">▷ later this month</p>
         <div class="mini-works-grid">
-          <div class="mini-work" style="background-color: var(--toasted-caramel);" onmouseenter="showPopover(event, 'ella')" onmouseleave="scheduleHidePopover()">Ella Arcangel Vol. 2</div>
-          <div class="mini-work" style="background-color: var(--dark-chocolate);" onmouseenter="showPopover(event, 'mamasusan')" onmouseleave="scheduleHidePopover()">Mama Susan Special Ed.</div>
+          <div class="mini-work" style="background-color: var(--toasted-caramel);" onmouseenter="showBookPopover(event, 'ella')" onmouseleave="scheduleHidePopover()">Ella Arcangel Vol. 2</div>
+          <div class="mini-work" style="background-color: var(--dark-chocolate);" onmouseenter="showBookPopover(event, 'mamasusan')" onmouseleave="scheduleHidePopover()">Mama Susan Special Ed.</div>
         </div>
       </div>
     </section>
@@ -144,9 +144,14 @@
             <button class="pub-pill" onclick="filterShowcase('Anvil', this)">Anvil</button>
             <button class="pub-pill" onclick="filterShowcase('Visprint', this)">Visprint</button>
             <button class="pub-pill" onclick="filterShowcase('Komiket', this)">Komiket / Indie</button>
+            <button class="pub-pill" onclick="filterShowcase('Adarna', this)">Adarna</button>
           </div>
         </div>
-        <div class="showcase-row" id="showcaseRow"></div>
+        <div class="showcase-carousel-wrapper">
+          <button class="showcase-nav-btn prev" id="showcasePrevBtn" onclick="scrollShowcase(-1)" aria-label="Previous books">‹</button>
+          <div class="showcase-row" id="showcaseRow"></div>
+          <button class="showcase-nav-btn next" id="showcaseNextBtn" onclick="scrollShowcase(1)" aria-label="Next books">›</button>
+        </div>
       </div>
 
       <div class="trivia-box-large">
@@ -374,11 +379,13 @@
 
           <form class="modal-review-form" onsubmit="submitBookReview(event)">
             <div class="review-form-row">
-              <input type="text" id="reviewHandleInput" placeholder="@your_handle (default: @romar_reads)" maxlength="28" />
+              <input type="text" id="reviewHandleInput" placeholder="@your_handle (default: @kabanata_reader)" maxlength="28" />
               <select id="reviewRatingSelect" aria-label="Star rating">
                 <option value="5">★★★★★ (5.0)</option>
                 <option value="4">★★★★☆ (4.0)</option>
                 <option value="3">★★★☆☆ (3.0)</option>
+                <option value="2">★★☆☆☆ (2.0)</option>
+                <option value="1">★☆☆☆☆ (1.0)</option>
               </select>
             </div>
             <textarea id="reviewTextInput" rows="2" placeholder="Share your thoughts or favorite quote from this book..." required></textarea>
