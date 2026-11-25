@@ -66,15 +66,19 @@
       </div>
     </section>
 
-    <!-- Section 3: 3-Column Author Spotlight / Reading Community / Upcoming Releases -->
+     <!-- Section 3: 3-Column Author Spotlight / Reading Community / Upcoming Releases -->
     <section class="tri-column-section">
       <!-- Left: Author of the Day -->
       <div class="author-col">
         <div class="author-label">all about</div>
         <div class="author-name">Lualhati Bautista</div>
         <div class="author-bio-top">
-          <div class="author-photo">LB</div>
-          <div>
+          <img 
+            src="assets/lualhati.jpg"
+            alt = "Portrait"
+            class="author-photo"
+          />
+        <div>  
             <p><strong>Born:</strong> Dec 2, 1945</p>
             <p><strong>Based in:</strong> Tondo, Manila</p>
             <p><strong>Genres:</strong> Social Realism, Historical Fiction</p>
@@ -184,12 +188,13 @@
       <div class="search-container">
         <div class="search-box">
           <input
-            type="text"
-            id="searchInput"
-            placeholder="Search by book title, Filipino author, publisher, or trope..."
-            oninput="filterBooks()"
-            onkeydown="if (event.key === 'Enter') fetchBooksFromAPI(this.value || 'Philippine literature')"
+              type="text"
+              id="searchInput"
+              placeholder="Search by book title, Filipino author, publisher, or trope..."
+              oninput="handleExploreSearch()"
+              onkeydown="if (event.key === 'Enter') { event.preventDefault(); handleExploreSearch(true); }"
           />
+
           <button type="button" onclick="fetchBooksFromAPI(document.getElementById('searchInput').value || 'Philippine literature')">
             Search
           </button>
